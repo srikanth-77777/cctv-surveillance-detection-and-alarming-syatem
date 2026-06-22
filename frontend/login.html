@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AegisSec Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--accent-glow);
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .login-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .links {
+            margin-top: 25px;
+            font-size: 0.9rem;
+        }
+
+        .links a {
+            color: var(--accent-glow);
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .links a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* Ambient animated glow for the background */
+        .ambient-light {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-light"></div>
+    
+    <div class="glass-panel login-container">
+        <div class="login-logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>AegisSec</span>
+        </div>
+        
+        <h2 style="margin-bottom: 8px;">System Authentication</h2>
+        <p class="subtitle" style="margin-bottom: 24px;">Restricted Access Protocol</p>
+        
+        <div id="error-box" class="error-msg">Invalid credentials.</div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Operator ID</label>
+                <input type="text" id="username" required placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="password">Passcode</label>
+                <input type="password" id="password" required placeholder="Enter password">
+            </div>
+            <button type="submit" class="btn-primary login-btn">Initialize Connection</button>
+        </form>
+
+        <div class="links">
+            <p>System issues? <a href="contact.html">Contact Support Team</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const errorBox = document.getElementById('error-box');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    localStorage.setItem('auth_token', data.token);
+                    window.location.href = 'index.html';
+                } else {
+                    errorBox.innerText = data.message || 'Authentication failed.';
+                    errorBox.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorBox.innerText = 'Server communication error.';
+                errorBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

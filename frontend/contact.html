@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Support - AegisSec Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .contact-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .contact-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .contact-header svg {
+            color: var(--accent-glow);
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px 14px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 0 1px var(--accent-glow);
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+
+        .status-msg {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .success-bg {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+
+        .error-bg {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--accent-glow);
+        }
+
+        .ambient-light {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-light"></div>
+    
+    <div class="glass-panel contact-container">
+        <div class="contact-header">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <h2 style="margin-bottom: 8px;">Contact Support Command</h2>
+            <p class="subtitle" style="margin: 0; font-size: 0.9rem;">Submit technical anomalies or personnel requests.</p>
+        </div>
+        
+        <div id="status-box" class="status-msg"></div>
+
+        <form id="contact-form">
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="name">Operator Name</label>
+                    <input type="text" id="name" required placeholder="John Doe">
+                </div>
+                <div style="flex: 1;">
+                    <label for="email">Contact Channel</label>
+                    <input type="email" id="email" required placeholder="email@agency.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="subject">Clearance Header (Subject)</label>
+                <input type="text" id="subject" required placeholder="e.g. System Offline">
+            </div>
+            <div class="form-group">
+                <label for="message">Detailed Report</label>
+                <textarea id="message" required placeholder="Provide full context here..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary submit-btn">Transmit Report</button>
+        </form>
+
+        <a href="login.html" class="back-link">Return to Authentication Terminal</a>
+    </div>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                subject: document.getElementById('subject').value.trim(),
+                message: document.getElementById('message').value.trim()
+            };
+            
+            const btn = e.target.querySelector('.submit-btn');
+            const statusBox = document.getElementById('status-box');
+            
+            // UI Feedback
+            const originalBtnText = btn.innerText;
+            btn.innerText = 'Transmitting...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                
+                statusBox.style.display = 'block';
+                if (data.status === 'success') {
+                    statusBox.className = 'status-msg success-bg';
+                    statusBox.innerText = 'Report transmitted successfully.';
+                    e.target.reset();
+                } else {
+                    statusBox.className = 'status-msg error-bg';
+                    statusBox.innerText = data.message || 'Transmission failed.';
+                }
+            } catch (err) {
+                console.error(err);
+                statusBox.style.display = 'block';
+                statusBox.className = 'status-msg error-bg';
+                statusBox.innerText = 'Server communication error.';
+            } finally {
+                btn.innerText = originalBtnText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,37 +1,27 @@
-# Python environment
-site-packages/
-Scripts/
-venv/
-env/
-.Python
-
-# Data and uploads
-uploads/
-videos/
-
-# Editor/project files
-.vscode/
-.idea/
-*.swp
-*~
-*.log
-.DS_Store
-Thumbs.db
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-
-# Package/build output
-build/
-dist/
-*.egg-info/
-.eggs/
-
-# Environment files
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
 .env
 
-# Notebook checkpoints
-.ipynb_checkpoints/
+# Virtual Environment in repo
+Scripts/
+site-packages/
+
+# Database & temp uploads
+*.db
+uploads/*
+!uploads/.gitkeep
+alerts/*
+!alerts/.gitkeep
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

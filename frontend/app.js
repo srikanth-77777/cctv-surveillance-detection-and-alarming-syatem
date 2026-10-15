@@ -189,6 +189,71 @@ function initUploader() {
         }
     }
 
+    // Load demo videos list
+    loadDemoVideos();
+
+    async function loadDemoVideos() {
+        const demoContainer = document.getElementById('demo-videos-list');
+        if (!demoContainer) return;
+
+        try {
+            const res = await fetch('/api/sources', { headers: getAuthHeaders() });
+            if (!res.ok) return;
+            const data = await res.json();
+            const demoFiles = (data.sources || []).filter(s => s.type === 'file');
+
+            demoContainer.innerHTML = '';
+            demoFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'demo-item';
+                item.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <div class="demo-item-info">
+                        <span class="demo-item-title">${file.name}</span>
+                        <span class="demo-item-desc">Demo Clip ${index + 1}</span>
+                    </div>
+                `;
+
+                item.addEventListener('click', async () => {
+                    document.querySelectorAll('.demo-item').forEach(el => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    await selectDemoVideo(file.id);
+                });
+
+                demoContainer.appendChild(item);
+            });
+        } catch (err) {
+            console.error('Failed to load demo videos:', err);
+        }
+    }
+
+    async function selectDemoVideo(filename) {
+        statusMsg.classList.remove('hidden');
+        statusText.innerText = `Loading demo ${filename}...`;
+        runBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/select_demo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                body: JSON.stringify({ filename })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                uploadedFilename = data.filename;
+                statusText.innerText = `Demo selected: ${data.filename}. Click 'Run Detection' to play.`;
+                runBtn.disabled = false;
+            } else {
+                statusText.innerText = data.message || 'Failed to load demo video.';
+            }
+        } catch (err) {
+            console.error(err);
+            statusText.innerText = 'Error selecting demo video.';
+        }
+    }
+
     runBtn.addEventListener('click', () => {
         const videoWrapper = document.getElementById('custom-video-wrapper');
         const token = localStorage.getItem('auth_token');

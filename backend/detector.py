@@ -42,12 +42,39 @@ class ObjectDetector:
         if not self.cap.isOpened():
              self.cap = cv2.VideoCapture(self.video_source)
              
-        while self.cap.isOpened():
-            ret, frame = self.cap.read()
-            if not ret:
-                # Loop video if it's a file
-                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                continue
+        while True:
+            if not self.cap or not self.cap.isOpened():
+                break
+
+            try:
+                ret, frame = self.cap.read()
+            except cv2.error as e:
+                print(f"[STREAM] OpenCV read error, reconnecting: {e}")
+                try:
+                    self.cap.release()
+                    self.cap = cv2.VideoCapture(self.video_source)
+                    ret, frame = self.cap.read()
+                except Exception:
+                    break
+            except Exception as e:
+                print(f"[STREAM] Unexpected read error: {e}")
+                break
+
+            if not ret or frame is None:
+                # Video file reached the end — loop it seamlessly
+                try:
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    ret, frame = self.cap.read()
+                    if not ret or frame is None:
+                        self.cap.release()
+                        self.cap = cv2.VideoCapture(self.video_source)
+                        ret, frame = self.cap.read()
+                        if not ret or frame is None:
+                            break
+                except Exception as e:
+                    print(f"[STREAM] Error resetting loop: {e}")
+                    break
+
 
             (h, w) = frame.shape[:2]
             blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),

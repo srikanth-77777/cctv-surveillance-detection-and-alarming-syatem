@@ -153,8 +153,7 @@ async def internal_server_exception_handler(request: Request, exc: Exception):
 
 
 # ── CORS Policy ─────────────────────────────────────────────────────
-# Only allow requests from the same origin (the served frontend).
-# Blocks any external website from calling our API endpoints.
+# Allows requests from localhost and deployed Railway domains (*.railway.app, *.up.railway.app)
 from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
@@ -162,9 +161,10 @@ app.add_middleware(
         "http://localhost:8050",
         "http://127.0.0.1:8050",
     ],
+    allow_origin_regex=r"https?://.*(railway\.app|localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Setup Paths
@@ -322,6 +322,29 @@ async def upload_video(file: UploadFile = File(...), user: str = Depends(require
     
     return {"status": "success", "message": "Video loaded. Ready for playback.", "filename": file.filename}
 
+class DemoSelectRequest(BaseModel):
+    filename: str
+
+@app.post("/api/select_demo")
+async def select_demo(data: DemoSelectRequest, user: str = Depends(require_auth)):
+    global custom_detector
+    
+    file_path = os.path.join(BASE_DIR, "videos", data.filename)
+    if not os.path.exists(file_path):
+        return JSONResponse({"status": "error", "message": "Demo video not found"}, status_code=404)
+        
+    if custom_detector:
+        custom_detector.release()
+        
+    custom_detector = ObjectDetector(file_path, source_name=data.filename)
+    custom_detector.set_config(
+        live_detector.target_objects,
+        live_detector.confidence_threshold,
+        notifier.enabled
+    )
+    return {"status": "success", "message": f"Demo video {data.filename} loaded.", "filename": data.filename}
+
+
 @app.get("/api/custom_feed")
 async def custom_feed(token: str = None, authorization: str = Header(None)):
     """Supports both header auth and ?token= query param (needed for <img src>)."""
@@ -438,5 +461,7 @@ async def manual_cleanup(user: str = Depends(require_auth)):
     return {"status": "success", "removed": removed}
 
 if __name__ == "__main__":
-    print("[SERVER] Starting FastAPI Server on http://localhost:8050")
-    uvicorn.run("api:app", host="0.0.0.0", port=8050, reload=False)
+    port = int(os.environ.get("PORT", 8050))
+    print(f"[SERVER] Starting FastAPI Server on port {port}")
+    uvicorn.run("backend.api:app", host="0.0.0.0", port=port, reload=False)
+

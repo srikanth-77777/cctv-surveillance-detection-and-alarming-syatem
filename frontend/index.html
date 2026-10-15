@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AegisSec Intelligence</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <div class="app-container">
@@ -72,6 +72,15 @@
                             <h3>Drag & Drop Video Here</h3>
                             <p>or click to browse</p>
                             <input type="file" id="video-upload-input" accept="video/mp4,video/x-m4v,video/*" hidden>
+                        </div>
+
+                        <div class="demo-videos-section">
+                            <div class="demo-divider">
+                                <span>OR CHOOSE PRE-LOADED DEMO</span>
+                            </div>
+                            <div class="demo-list" id="demo-videos-list">
+                                <!-- Populated dynamically by app.js -->
+                            </div>
                         </div>
 
                         <div id="upload-status" class="status-message hidden">
@@ -161,6 +170,6 @@
     <!-- Alarm sound -->
     <audio id="alarm-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-facility-alarm-908.mp3" preload="auto"></audio>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>

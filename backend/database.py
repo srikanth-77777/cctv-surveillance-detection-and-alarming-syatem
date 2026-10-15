@@ -4,7 +4,9 @@ from datetime import datetime
 import hashlib
 import os
 
-DATABASE_URL = "sqlite:///../surveillance_v2.db"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "surveillance_v2.db")
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 # Create Database Engine
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
